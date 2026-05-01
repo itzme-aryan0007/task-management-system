@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TaskFlow — Team Task Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --amber:   #f59e0b;
+      --amber-d: #d97706;
+      --amber-l: #fcd34d;
+      --teal:    #14b8a6;
+      --danger:  #f43f5e;
+      --bg:      #fafaf9;
+      --ink:     #1c1917;
+      --ink2:    #44403c;
+      --muted:   #a8a29e;
+      --surface: #ffffff;
+      --border:  #e7e5e4;
+      --radius:  10px;
+    }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background decoration */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 10% 20%, #fcd34d22 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 90% 80%, #14b8a611 0%, transparent 60%);
+      pointer-events: none;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px; right: -200px;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #f59e0b18 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .auth-wrapper {
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+      position: relative;
+      z-index: 1;
+      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .brand-logo {
+      width: 56px; height: 56px;
+      background: var(--ink);
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      position: relative;
+      box-shadow: 0 8px 24px #1c191730;
+    }
+    .brand-logo::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 19px;
+      border: 2px solid var(--amber);
+      opacity: 0.5;
+    }
+    .brand-logo svg { width: 28px; height: 28px; }
+    .brand h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 32px;
+      font-weight: 400;
+      letter-spacing: -0.5px;
+      color: var(--ink);
+    }
+    .brand h1 span { color: var(--amber-d); font-style: italic; }
+    .brand p { color: var(--muted); margin-top: 6px; font-size: 13px; font-weight: 400; letter-spacing: 0.02em; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 32px #1c191710, 0 1px 4px #1c191708;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: #f5f5f4;
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      transition: all 0.2s;
+      border: none;
+      background: none;
+      font-family: inherit;
+    }
+    .tab.active {
+      background: var(--ink);
+      color: #fff;
+      box-shadow: 0 2px 8px #1c191730;
+    }
+
+    .form-group { margin-bottom: 18px; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink2);
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    input {
+      width: 100%;
+      padding: 11px 14px;
+      background: #fafaf9;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      color: var(--ink);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus {
+      border-color: var(--amber);
+      box-shadow: 0 0 0 3px #f59e0b18;
+      background: #fff;
+    }
+    input::placeholder { color: var(--muted); }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.01em;
+    }
+    .btn-primary {
+      background: var(--ink);
+      color: #fff;
+      box-shadow: 0 2px 12px #1c191740;
+    }
+    .btn-primary:hover { background: #292524; transform: translateY(-1px); box-shadow: 0 4px 20px #1c191750; }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .alert {
+      padding: 11px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .alert-error   { background: #fff1f2; border: 1px solid #fecdd3; color: #be123c; }
+    .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="8" height="8" rx="2" fill="#f59e0b"/>
+          <rect x="16" y="4" width="8" height="8" rx="2" fill="white" opacity="0.4"/>
+          <rect x="4" y="16" width="8" height="8" rx="2" fill="white" opacity="0.4"/>
+          <rect x="16" y="16" width="8" height="8" rx="2" fill="white" opacity="0.7"/>
+        </svg>
+      </div>
+      <h1>Task<span>Flow</span></h1>
+      <p>Team Task Management System</p>
+    </div>
+
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">Sign In</button>
+        <button class="tab" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+      <div id="alert-box" style="display:none"></div>
+
+      <!-- Login Form -->
+      <div id="login-form" class="form-section active">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="login-email" placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" />
+        </div>
+        <button class="btn btn-primary" onclick="login()">Sign In →</button>
+      </div>
+
+      <!-- Signup Form -->
+      <div id="signup-form" class="form-section">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="signup-name" placeholder="John Doe" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="signup-email" placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="signup-password" placeholder="Min 6 characters" />
+        </div>
+        <button class="btn btn-primary" onclick="signup()">Create Account →</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '';
+    if (localStorage.getItem('token')) window.location.href = '/dashboard.html';
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tab + '-form').classList.add('active');
+      hideAlert();
+    }
+    function showAlert(msg, type = 'error') {
+      const box = document.getElementById('alert-box');
+      box.style.display = 'flex';
+      box.className = 'alert alert-' + type;
+      box.textContent = msg;
+    }
+    function hideAlert() { document.getElementById('alert-box').style.display = 'none'; }
+
+    async function login() {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      if (!email || !password) return showAlert('Please fill in all fields');
+      try {
+        const res = await fetch(API + '/api/auth/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) return showAlert(data.error || 'Login failed');
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify({ name: data.name, email: data.email, role: data.role }));
+        window.location.href = '/dashboard.html';
+      } catch (e) { showAlert('Connection error. Is the server running?'); }
+    }
+
+    async function signup() {
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      if (!name || !email || !password) return showAlert('Please fill in all fields');
+      if (password.length < 6) return showAlert('Password must be at least 6 characters');
+      try {
+        const res = await fetch(API + '/api/auth/signup', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) return showAlert(data.error || Object.values(data)[0] || 'Signup failed');
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify({ name: data.name, email: data.email, role: data.role }));
+        showAlert('Account created! Redirecting...', 'success');
+        setTimeout(() => window.location.href = '/dashboard.html', 800);
+      } catch (e) { showAlert('Connection error. Is the server running?'); }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const active = document.querySelector('.form-section.active').id;
+        if (active === 'login-form') login(); else signup();
+      }
+    });
+  </script>
+</body>
+</html>
